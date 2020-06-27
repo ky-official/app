@@ -3,6 +3,7 @@ package com.audiolemon.videogenerator
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -62,14 +63,23 @@ sealed class LemonFileManager {
 
             }
         }
-        fun createVideoContainer(id: String):String{
+
+        fun createVideoContainer(id: String): String {
             var path: String = "$ROOT/tasks/task_$id/export/video.mp4"
             var videoContainer = File(path)
             videoContainer.createNewFile()
             return path
         }
-        fun getResource(path: String):File{
+
+        fun getResource(path: String): File {
             return File(path)
+        }
+
+        fun getExportBytes(id: String): InputStream {
+            return Files.newInputStream(Paths.get("$ROOT/tasks/task_$id/export/video.mp4"))
+        }
+        fun getExport(id: String): File {
+            return File("$ROOT/tasks/task_$id/export/video.mp4")
         }
 
         fun saveResources(type: String, id: String, resource: Part): String? {

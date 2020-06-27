@@ -234,6 +234,8 @@ sealed class LemonRenderer {
                         val bgrScreen = convertToType(bufferedImage, BufferedImage.TYPE_3BYTE_BGR)
                         val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
+
+                       // frame.quality = 10
                         writer.encodeVideo(0, frame)
 
                         index++

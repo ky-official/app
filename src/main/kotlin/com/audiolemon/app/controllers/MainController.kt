@@ -4,11 +4,17 @@ import com.audiolemon.videogenerator.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.apache.commons.io.IOUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 
 @RestController
@@ -17,6 +23,21 @@ class MainController {
     @Autowired
     private val request: HttpServletRequest? = null
 
+    @GetMapping("/video/{id}")
+    @ResponseBody
+    fun getVideoController(@PathVariable id: String ,response: HttpServletResponse): ResponseEntity<FileSystemResource> {
+
+        var vid = LemonFileManager.getExport(id)
+        var length = vid.length()
+
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.asMediaType(MimeType.valueOf("video/mp4"))
+        headers.contentLength = length
+        headers.setContentDispositionFormData("attachment","audio.mp4")
+
+        return ResponseEntity(FileSystemResource(vid),headers,HttpStatus.OK)
+
+    }
 
     @GetMapping("/progress/{id}")
     fun progressController(@PathVariable id: String): String {
@@ -26,7 +47,6 @@ class MainController {
 
     @GetMapping("/status/{id}")
     fun statusController(@PathVariable id: String): String {
-
         return LemonDBManager.getStatus(id)
     }
 

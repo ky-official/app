@@ -88,7 +88,6 @@ sealed class LemonDBManager() {
             try {
                 val result = statement.executeQuery("SELECT STATUS FROM TASKS WHERE ID='$id'")
                 while (result.next()) {
-                    this.close()
                     return result.getString("STATUS")
                     break
                 }
