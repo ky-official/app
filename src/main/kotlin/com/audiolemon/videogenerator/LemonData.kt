@@ -32,7 +32,7 @@ class LemonData {
 
             when (it.name) {
                 "id" -> {
-                    this.id = String(it.inputStream.readAllBytes())
+                    this.id = String(it.inputStream.readBytes())
                     LemonFileManager.createTaskDirectory(id)
                 }
                 "audio" -> {
@@ -48,13 +48,13 @@ class LemonData {
                     this.foregroudImageUrl = path!!
                 }
                 "header" -> {
-                    this.header = String(it.inputStream.readAllBytes())
+                    this.header = String(it.inputStream.readBytes())
                 }
                 "subHeader" -> {
-                    this.subHeader = String(it.inputStream.readAllBytes())
+                    this.subHeader = String(it.inputStream.readBytes())
                 }
                 "meta" -> {
-                    val meta = Gson().fromJson(String(it.inputStream.readAllBytes()), LemonMeta().javaClass)
+                    val meta = Gson().fromJson(String(it.inputStream.readBytes()), LemonMeta().javaClass)
                     this.meta = meta
 
                 }
