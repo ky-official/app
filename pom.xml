@@ -78,29 +78,23 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core -->
 
-        <!--   external dependencies     -->
         <dependency>
-            <groupId>xuggle-xuggler</groupId>
+            <groupId>xuggle</groupId>
             <artifactId>xuggle-xuggler</artifactId>
             <version>5.4</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/repo/xuggle-xuggler-5.4.jar</systemPath>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.googlecode.soundlibs/tritonus-share -->
         <dependency>
-            <groupId>tritonus_aos</groupId>
-            <artifactId>tritonus_aos</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/repo/tritonus_aos.jar</systemPath>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>tritonus-share</artifactId>
+            <version>0.3.7-1</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.clojars.automata/tritonus-aos -->
         <dependency>
-            <groupId>tritonus_share</groupId>
-            <artifactId>tritonus_share</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/repo/tritonus_share.jar</systemPath>
+            <groupId>org.clojars.automata</groupId>
+            <artifactId>tritonus-aos</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
 
@@ -179,6 +173,12 @@
     </build>
 
     <repositories>
+
+        <repository>
+            <id>xuggle repo</id>
+            <url>https://files.liferay.com/mirrors/xuggle.googlecode.com/svn/trunk/repo/share/java/</url>
+        </repository>
+
         <repository>
             <id>spring-milestones</id>
             <name>Spring Milestones</name>
