@@ -84,7 +84,7 @@
             <artifactId>xuggle-xuggler</artifactId>
             <version>5.4</version>
             <scope>system</scope>
-            <systemPath>${basedir}/repo/xuggle-xuggler-5.4.jar</systemPath>
+            <systemPath>${pom.basedir}/repo/xuggle-xuggler-5.4.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -92,7 +92,7 @@
             <artifactId>tritonus_aos</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/repo/tritonus_aos.jar</systemPath>
+            <systemPath>${pom.basedir}/repo/tritonus_aos.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -100,7 +100,7 @@
             <artifactId>tritonus_share</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/repo/tritonus_share.jar</systemPath>
+            <systemPath>${pom.basedir}/repo/tritonus_share.jar</systemPath>
         </dependency>
 
 
@@ -152,6 +152,29 @@
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>lib/yourJar.jar</file>
+                            <groupId>com.somegroup.id</groupId>
+                            <artifactId>artefact-id</artifactId>
+                            <version>x.y.z</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
