@@ -62,18 +62,4 @@ public class AudioDevice
 			buffer[j+1] = (byte)(value >> 8 );
 		}
 	}
-	
-	public static void main( String[] argv ) throws Exception
-	{
-		float[] samples = new float[1024];
-		WaveDecoder reader = new WaveDecoder( new FileInputStream( "samples/sample.wav" ) );
-		AudioDevice device = new AudioDevice( );
-		
-		while( reader.readSamples( samples ) > 0 )
-		{
-			device.writeSamples( samples );
-		}
-		
-		Thread.sleep( 10000 );
-	}
 }
