@@ -91,12 +91,6 @@
             <version>0.3.7-1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.clojars.automata/tritonus-aos -->
-        <dependency>
-            <groupId>org.clojars.automata</groupId>
-            <artifactId>tritonus-aos</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
