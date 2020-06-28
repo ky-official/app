@@ -109,6 +109,7 @@ sealed class LemonRenderer {
                 if (imageLoaded) {
 
                     val trackProgress = (currentPoint / points.toDouble()) * 100
+                    println("task with id:${data.id} at $trackProgress%")
                     if (trackProgress.roundToInt() != progress) {
                         println("task with id:${data.id} at $progress%")
                         progress = trackProgress.roundToInt()
