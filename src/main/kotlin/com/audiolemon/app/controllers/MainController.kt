@@ -60,6 +60,7 @@ class MainController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @CrossOrigin
     fun deleteController(@PathVariable id: String): ResponseEntity<Any> {
 
         when {
