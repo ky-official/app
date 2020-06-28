@@ -94,6 +94,9 @@ sealed class LemonRenderer {
                 override fun imageUpdate(img: Image?, infoflags: Int, x: Int, y: Int, width: Int, height: Int): Boolean {
 
                     imageLoaded = infoflags == 32
+
+                    println(infoflags)
+
                     return true
                 }
 
@@ -109,7 +112,6 @@ sealed class LemonRenderer {
                 if (true) {
 
                     val trackProgress = (currentPoint / points.toDouble()) * 100
-                    println("task with id:${data.id} at $trackProgress%")
                     if (trackProgress.roundToInt() != progress) {
                         println("task with id:${data.id} at $progress%")
                         progress = trackProgress.roundToInt()
