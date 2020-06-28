@@ -25,7 +25,6 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.200</version>
-            <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
         <dependency>
@@ -103,15 +102,6 @@
             <scope>system</scope>
             <systemPath>${basedir}/repo/tritonus_share.jar</systemPath>
         </dependency>
-
-        <dependency>
-            <groupId>h2</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.200</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/repo/h2/bin/h2-1.4.200.jar</systemPath>
-        </dependency>
-
 
 
         <dependency>
