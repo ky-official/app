@@ -93,9 +93,11 @@ sealed class LemonRenderer {
             val obs = object : ImageObserver {
                 override fun imageUpdate(img: Image?, infoflags: Int, x: Int, y: Int, width: Int, height: Int): Boolean {
 
-                    imageLoaded = infoflags == 32
-
                     println(infoflags)
+                    println(imageLoaded)
+
+                    if (infoflags == 32)
+                        imageLoaded = true
 
                     return true
                 }
@@ -109,9 +111,10 @@ sealed class LemonRenderer {
 
             while (LemonTaskManager.taskIsRunning(data.id)) {
 
-                if (true) {
+                if (imageLoaded) {
 
                     val trackProgress = (currentPoint / points.toDouble()) * 100
+                    println("task with id:${data.id} at $trackProgress%")
                     if (trackProgress.roundToInt() != progress) {
                         println("task with id:${data.id} at $progress%")
                         progress = trackProgress.roundToInt()
@@ -238,7 +241,7 @@ sealed class LemonRenderer {
                         val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
 
-                       // frame.quality = 10
+                        // frame.quality = 10
                         writer.encodeVideo(0, frame)
 
                         index++
