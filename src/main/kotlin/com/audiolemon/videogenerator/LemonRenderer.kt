@@ -94,10 +94,11 @@ sealed class LemonRenderer {
                 override fun imageUpdate(img: Image?, infoflags: Int, x: Int, y: Int, width: Int, height: Int): Boolean {
 
                     println(infoflags)
-                    println(imageLoaded)
 
                     if (infoflags == 32)
                         imageLoaded = true
+
+                    println(imageLoaded)
 
                     return true
                 }
@@ -108,6 +109,8 @@ sealed class LemonRenderer {
             bg.drawImage(watermark, 750, 820, null)
             bg.drawImage(forg, data.meta.foreground.posX!!.roundToInt(), data.meta.foreground.posY!!.roundToInt(), null)
             bg.drawImage(back, null, obs)
+
+            println("task has reached loop")
 
             while (LemonTaskManager.taskIsRunning(data.id)) {
 
