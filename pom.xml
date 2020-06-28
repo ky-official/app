@@ -83,7 +83,6 @@
             <groupId>xuggle-xuggler</groupId>
             <artifactId>xuggle-xuggler</artifactId>
             <version>5.4</version>
-            <scope>system</scope>
             <systemPath>${basedir}/repo/xuggle-xuggler-5.4.jar</systemPath>
         </dependency>
 
@@ -91,7 +90,6 @@
             <groupId>tritonus_aos</groupId>
             <artifactId>tritonus_aos</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
             <systemPath>${basedir}/repo/tritonus_aos.jar</systemPath>
         </dependency>
 
@@ -99,7 +97,6 @@
             <groupId>tritonus_share</groupId>
             <artifactId>tritonus_share</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
             <systemPath>${basedir}/repo/tritonus_share.jar</systemPath>
         </dependency>
 
