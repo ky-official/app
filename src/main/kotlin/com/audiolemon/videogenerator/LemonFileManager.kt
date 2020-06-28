@@ -92,7 +92,7 @@ sealed class LemonFileManager {
                         filePath = Paths.get(path, "audio.${resource.submittedFileName.substringAfterLast(".")}")
                         try {
                             var os = Files.newOutputStream(filePath)
-                            os.write(resource.inputStream.readAllBytes())
+                            os.write(resource.inputStream.readBytes())
                             return filePath.toString()
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -103,7 +103,7 @@ sealed class LemonFileManager {
                         filePath = Paths.get(path, "background.${resource.submittedFileName.substringAfterLast(".")}")
                         try {
                             var os = Files.newOutputStream(filePath)
-                            os.write(resource.inputStream.readAllBytes())
+                            os.write(resource.inputStream.readBytes())
                             return filePath.toString()
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -114,7 +114,7 @@ sealed class LemonFileManager {
                         filePath = Paths.get(path, "foreground.${resource.submittedFileName.substringAfterLast(".")}")
                         try {
                             var os = Files.newOutputStream(filePath)
-                            os.write(resource.inputStream.readAllBytes())
+                            os.write(resource.inputStream.readBytes())
                             return filePath.toString()
                         } catch (e: Exception) {
                             e.printStackTrace()
