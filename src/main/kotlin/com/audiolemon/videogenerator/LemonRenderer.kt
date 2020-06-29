@@ -232,7 +232,7 @@ sealed class LemonRenderer {
                         currentPoint++
 
                         val bgrScreen = resizeImage(bufferedImage, frameSize, frameSize)
-                        val converter = ConverterFactory.createConverter(bufferedImage, IPixelFormat.Type.YUV420P)
+                        val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
 
                         writer.encodeVideo(0, frame)
