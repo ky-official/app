@@ -52,7 +52,6 @@ sealed class LemonAudioConverter {
                 }
 
                 override fun sourceInfo(p0: MultimediaInfo?) {
-                    println(p0)
                 }
 
                 override fun progress(p0: Int) {
