@@ -1,10 +1,10 @@
 package com.audiolemon.videogenerator
 
-import it.sauronsoftware.jave.*
 import javax.sound.sampled.AudioFileFormat
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import org.h2.store.fs.FileUtils
+import ws.schild.jave.*
 import java.io.File
 
 
@@ -20,7 +20,7 @@ sealed class LemonAudioConverter {
                 val inStream = AudioSystem.getAudioInputStream(source)
                 val sourceFormat = inStream.format
 
-                //if ((sourceFormat.sampleSizeInBits == 32 || sourceFormat.sampleSizeInBits == 24)) {
+                if ((sourceFormat.sampleSizeInBits == 32 || sourceFormat.sampleSizeInBits == 24)) {
                     val convertFormat = AudioFormat(
                             44100f, 16,
                             sourceFormat.channels,
@@ -32,12 +32,11 @@ sealed class LemonAudioConverter {
                     val convertedStream = AudioSystem.getAudioInputStream(convertFormat, inStream)
                     AudioSystem.write(convertedStream, AudioFileFormat.Type.WAVE, buffer)
 
-                    //val url = mp3Convert(buffer, target)
-                    //FileUtils.delete(buffer.absolutePath)
-
-                    return buffer.absolutePath
-               // }
-               //return mp3Convert(source, target)
+                    val url = mp3Convert(buffer, target)
+                    FileUtils.delete(buffer.absolutePath)
+                    return url
+                }
+                return mp3Convert(source, target)
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -47,7 +46,7 @@ sealed class LemonAudioConverter {
 
         private fun mp3Convert(source: File, target: File): String {
 
-            val listener = object: EncoderProgressListener{
+            val listener = object: EncoderProgressListener {
                 override fun message(p0: String?) {
                     println(p0)
                 }
@@ -66,10 +65,10 @@ sealed class LemonAudioConverter {
             audio.setChannels(2)
             audio.setSamplingRate(44100)
             val attrs = EncodingAttributes()
-            attrs.setFormat("mp3")
-            attrs.setAudioAttributes(audio)
+            attrs.format = "mp3"
+            attrs.audioAttributes = audio
             val encoder = Encoder()
-            encoder.encode(source, target, attrs,listener)
+            encoder.encode(MultimediaObject(source), target, attrs,listener)
             return target.absolutePath
 
         }

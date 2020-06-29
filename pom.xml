@@ -91,11 +91,10 @@
             <version>0.3.7-1</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.dadiyang/jave -->
         <dependency>
-            <groupId>dadiyang</groupId>
-            <artifactId>jave</artifactId>
-            <version>1.0.1</version>
+            <groupId>ws.schild</groupId>
+            <artifactId>jave-all-deps</artifactId>
+            <version>2.4.6</version>
         </dependency>
 
 
