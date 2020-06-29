@@ -1,11 +1,9 @@
 package com.audiolemon.videogenerator
 
-import it.sauronsoftware.jave.Encoder
+import it.sauronsoftware.jave.*
 import javax.sound.sampled.AudioFileFormat
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
-import it.sauronsoftware.jave.EncodingAttributes
-import it.sauronsoftware.jave.AudioAttributes
 import org.h2.store.fs.FileUtils
 import java.io.File
 
@@ -48,6 +46,20 @@ sealed class LemonAudioConverter {
 
         private fun mp3Convert(source: File, target: File): String {
 
+            val listener = object: EncoderProgressListener{
+                override fun message(p0: String?) {
+                    println(p0)
+                }
+
+                override fun sourceInfo(p0: MultimediaInfo?) {
+                    println(p0)
+                }
+
+                override fun progress(p0: Int) {
+                }
+
+            }
+
             val audio = AudioAttributes()
             audio.setCodec("libmp3lame")
             audio.setBitRate(128000)
@@ -57,8 +69,9 @@ sealed class LemonAudioConverter {
             attrs.setFormat("mp3")
             attrs.setAudioAttributes(audio)
             val encoder = Encoder()
-            encoder.encode(source, target, attrs)
+            encoder.encode(source, target, attrs,listener)
             return target.absolutePath
+
         }
     }
 }
