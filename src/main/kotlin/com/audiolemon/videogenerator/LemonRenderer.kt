@@ -106,7 +106,8 @@ sealed class LemonRenderer {
             bg.drawImage(back, null, obs)
 
             while (LemonTaskManager.taskIsRunning(data.id)) {
-
+                //dummy logic for heroku
+                System.nanoTime()
 
                 if (imageLoaded) {
 
