@@ -107,7 +107,7 @@ sealed class LemonRenderer {
 
             while (LemonTaskManager.taskIsRunning(data.id)) {
                 //dummy logic for heroku
-                System.nanoTime()
+                Thread.sleep(1)
 
                 if (imageLoaded) {
 
@@ -233,11 +233,10 @@ sealed class LemonRenderer {
                         x = startx
                         currentPoint++
 
-                        val bgrScreen = convertToType(bufferedImage, BufferedImage.TYPE_3BYTE_BGR)
+                        val bgrScreen = resizeImage(bufferedImage, 1080,1080)
                         val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
 
-                        // frame.quality = 10
                         writer.encodeVideo(0, frame)
 
                         index++
@@ -289,6 +288,15 @@ sealed class LemonRenderer {
                 result.add(array[evenIndex])
             }
             return result
+        }
+        fun resizeImage(image: BufferedImage, width: Int, height: Int): BufferedImage {
+            var type = 0
+            type = if (image.type == 0) BufferedImage.TYPE_INT_ARGB else image.type
+            val resizedImage = BufferedImage(width, height, type)
+            val g = resizedImage.createGraphics()
+            g.drawImage(image, 0, 0, width, height, null)
+            g.dispose()
+            return resizedImage
         }
 
     }
