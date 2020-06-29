@@ -33,7 +33,7 @@ class MainController {
         val headers = HttpHeaders()
         headers.contentType = MediaType.asMediaType(MimeType.valueOf("video/mp4"))
         headers.contentLength = length
-        headers.setContentDispositionFormData("attachment","audio.mp4")
+        headers.setContentDispositionFormData("attachment","video_$id.mp4")
 
         return ResponseEntity(FileSystemResource(vid),headers,HttpStatus.OK)
 

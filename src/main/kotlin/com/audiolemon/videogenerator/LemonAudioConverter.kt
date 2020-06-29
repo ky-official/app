@@ -1,36 +1,64 @@
 package com.audiolemon.videogenerator
 
+import it.sauronsoftware.jave.Encoder
 import javax.sound.sampled.AudioFileFormat
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
+import it.sauronsoftware.jave.EncodingAttributes
+import it.sauronsoftware.jave.AudioAttributes
+import org.h2.store.fs.FileUtils
+import java.io.File
+
 
 sealed class LemonAudioConverter {
 
     companion object {
-        fun convert(path: String): String?{
-            var source = LemonFileManager.getResource(path)
-            var destination = LemonFileManager.getResource(path.substringBefore(".") + "_converted.wav")
+        fun convert(path: String): String? {
+            val source = LemonFileManager.getResource(path)
+            val buffer = LemonFileManager.getResource(path.substringBefore(".") + "_converted.wav")
+            val target = LemonFileManager.getResource(path.substringBefore(".") + "_converted.mp3")
 
-            try{
+            try {
                 val inStream = AudioSystem.getAudioInputStream(source)
                 val sourceFormat = inStream.format
-                val convertFormat = AudioFormat(
-                        44100f, 16,
-                        sourceFormat.channels,
-                        true,
-                        false)
 
-                println("source can be converted: ${AudioSystem.isConversionSupported(convertFormat, sourceFormat)}")
+                if ((sourceFormat.sampleSizeInBits == 32 || sourceFormat.sampleSizeInBits == 24)) {
+                    val convertFormat = AudioFormat(
+                            44100f, 16,
+                            sourceFormat.channels,
+                            true,
+                            false)
 
-                val convStream = AudioSystem.getAudioInputStream(convertFormat, inStream)
-                AudioSystem.write(convStream, AudioFileFormat.Type.WAVE, destination)
-                return destination.absolutePath
+                    println("source can be converted: ${AudioSystem.isConversionSupported(convertFormat, sourceFormat)}")
 
-            }
-            catch (e: Exception){
+                    val convertedStream = AudioSystem.getAudioInputStream(convertFormat, inStream)
+                    AudioSystem.write(convertedStream, AudioFileFormat.Type.WAVE, buffer)
+
+                    val url = mp3Convert(buffer, target)
+                    FileUtils.delete(buffer.absolutePath)
+                    return url
+                }
+                return mp3Convert(source, target)
+
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
             return null
+        }
+
+        private fun mp3Convert(source: File, target: File): String {
+
+            val audio = AudioAttributes()
+            audio.setCodec("libmp3lame")
+            audio.setBitRate(128000)
+            audio.setChannels(2)
+            audio.setSamplingRate(44100)
+            val attrs = EncodingAttributes()
+            attrs.setFormat("mp3")
+            attrs.setAudioAttributes(audio)
+            val encoder = Encoder()
+            encoder.encode(source, target, attrs)
+            return target.absolutePath
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.audiolemon.videogenerator
 
 import com.xuggle.mediatool.IMediaWriter
-import com.xuggle.mediatool.demos.CaptureScreenToFile.convertToType
 import com.xuggle.xuggler.IPixelFormat
 import com.xuggle.xuggler.video.ConverterFactory
 import java.awt.*
@@ -87,7 +86,7 @@ sealed class LemonRenderer {
 
             var index = 1
             var progress = 0
-            val heightBuffer: Array<Float> = Array<Float>(ampData.size) { i: Int -> 0f }
+            val heightBuffer: Array<Float> = Array<Float>(ampData.size) { i: Int -> i * 0f }
 
             var imageLoaded = false
             val obs = object : ImageObserver {
@@ -107,7 +106,7 @@ sealed class LemonRenderer {
 
             while (LemonTaskManager.taskIsRunning(data.id)) {
                 //dummy logic for heroku
-                Thread.sleep(1)
+                Thread.sleep(0)
 
                 if (imageLoaded) {
 
@@ -224,7 +223,6 @@ sealed class LemonRenderer {
                             }
                             x += width
                         }
-
                         path.closePath()
                         path.transform(transform)
                         bg.paint = waveformFill
@@ -233,9 +231,9 @@ sealed class LemonRenderer {
                         x = startx
                         currentPoint++
 
-                        val bgrScreen = resizeImage(bufferedImage, 1080,1080)
-                        val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
-                        val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
+                      //  val bgrScreen = resizeImage(bufferedImage, 720,720)
+                        val converter = ConverterFactory.createConverter(bufferedImage, IPixelFormat.Type.YUV420P)
+                        val frame = converter.toPicture(bufferedImage, (41666.666 * index).roundToLong())
 
                         writer.encodeVideo(0, frame)
 
@@ -289,12 +287,12 @@ sealed class LemonRenderer {
             }
             return result
         }
-        fun resizeImage(image: BufferedImage, width: Int, height: Int): BufferedImage {
-            var type = 0
-            type = if (image.type == 0) BufferedImage.TYPE_INT_ARGB else image.type
+        private fun resizeImage(image: BufferedImage, width: Int, height: Int): BufferedImage {
+            val scaled = image.getScaledInstance(width,height, Image.SCALE_SMOOTH)
+            val type: Int = if (image.type == 0) BufferedImage.TYPE_INT_ARGB else image.type
             val resizedImage = BufferedImage(width, height, type)
             val g = resizedImage.createGraphics()
-            g.drawImage(image, 0, 0, width, height, null)
+            g.drawImage(scaled, 0, 0, width, height, null)
             g.dispose()
             return resizedImage
         }
