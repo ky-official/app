@@ -20,7 +20,7 @@ sealed class LemonAudioConverter {
                 val inStream = AudioSystem.getAudioInputStream(source)
                 val sourceFormat = inStream.format
 
-                if ((sourceFormat.sampleSizeInBits == 32 || sourceFormat.sampleSizeInBits == 24)) {
+                //if ((sourceFormat.sampleSizeInBits == 32 || sourceFormat.sampleSizeInBits == 24)) {
                     val convertFormat = AudioFormat(
                             44100f, 16,
                             sourceFormat.channels,
@@ -32,11 +32,12 @@ sealed class LemonAudioConverter {
                     val convertedStream = AudioSystem.getAudioInputStream(convertFormat, inStream)
                     AudioSystem.write(convertedStream, AudioFileFormat.Type.WAVE, buffer)
 
-                    val url = mp3Convert(buffer, target)
-                    FileUtils.delete(buffer.absolutePath)
-                    return url
-                }
-                return mp3Convert(source, target)
+                    //val url = mp3Convert(buffer, target)
+                    //FileUtils.delete(buffer.absolutePath)
+
+                    return buffer.absolutePath
+               // }
+               //return mp3Convert(source, target)
 
             } catch (e: Exception) {
                 e.printStackTrace()
