@@ -10,7 +10,7 @@ class AppApplication
 
 fun main(args: Array<String>) {
 
-	LemonFileManager.deleteTaskDirectory("")
-	LemonDBManager.removeTask("")
+	//LemonFileManager.deleteTaskDirectory("TSKQKG042420")
+	//LemonDBManager.removeTask("TSKQKG042420")
 	runApplication<AppApplication>(*args)
 }
