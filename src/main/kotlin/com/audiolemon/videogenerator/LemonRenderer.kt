@@ -232,7 +232,7 @@ sealed class LemonRenderer {
                         currentPoint++
 
                         val bgrScreen = resizeImage(bufferedImage, frameSize, frameSize)
-                        val converter = ConverterFactory.createConverter(bufferedImage, IPixelFormat.Type.BGR24)
+                        val converter = ConverterFactory.createConverter(bufferedImage, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
 
                         writer.encodeVideo(0, frame)
@@ -292,8 +292,7 @@ sealed class LemonRenderer {
 
             if (height != 1080) {
                 val scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH)
-                val type: Int = if (image.type == 0) BufferedImage.TYPE_INT_ARGB else image.type
-                val resizedImage = BufferedImage(width, height, type)
+                val resizedImage = BufferedImage(width, height,BufferedImage.TYPE_3BYTE_BGR )
                 val g = resizedImage.createGraphics()
                 g.drawImage(scaled, 0, 0, width, height, null)
                 g.dispose()
