@@ -95,6 +95,7 @@ sealed class LemonRenderer {
 
                     imageLoaded = infoflags == 32
                     return true
+
                 }
 
             }
@@ -106,7 +107,8 @@ sealed class LemonRenderer {
 
             while (LemonTaskManager.taskIsRunning(data.id)) {
 
-                if (/*imageLoaded*/true) {
+                println("task is looping")
+                if (imageLoaded) {
 
                     val trackProgress = (currentPoint / points.toDouble()) * 100
                     if (trackProgress.roundToInt() != progress) {
@@ -114,7 +116,6 @@ sealed class LemonRenderer {
                         progress = trackProgress.roundToInt()
                         LemonDBManager.updateProgress(data.id, progress)
                     }
-
 
                     if (currentPoint < points) {
 
@@ -235,7 +236,7 @@ sealed class LemonRenderer {
                         val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
 
-                       // frame.quality = 10
+                        // frame.quality = 10
                         writer.encodeVideo(0, frame)
 
                         index++
