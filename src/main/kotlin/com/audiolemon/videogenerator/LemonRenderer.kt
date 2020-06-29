@@ -16,21 +16,21 @@ import kotlin.math.roundToLong
 sealed class LemonRenderer {
 
     companion object {
-        suspend fun start(data: LemonData, writer: IMediaWriter, ampDta: ArrayList<ArrayList<Float>>) {
+        suspend fun start(data: LemonData, writer: IMediaWriter, ampDta: ArrayList<ArrayList<Float>>, frameSize: Int) {
             when (data.meta.waveform.design) {
                 LemonWaveformDesign.DEFAULT -> {
                     LemonDBManager.updateStatus(data.id, "RUNNING")
-                    default(data, writer, ampDta)
+                    default(data, writer, ampDta, frameSize)
                 }
                 else -> {
                     LemonDBManager.updateStatus(data.id, "RUNNING")
-                    default(data, writer, ampDta)
+                    default(data, writer, ampDta, frameSize)
                 }
             }
 
         }
 
-        suspend fun default(data: LemonData, writer: IMediaWriter, ampData: ArrayList<ArrayList<Float>>) {
+        suspend fun default(data: LemonData, writer: IMediaWriter, ampData: ArrayList<ArrayList<Float>>, frameSize: Int) {
 
             val ampData = arraySampler(compressMatrix(ampData, data.trackLength!!.toFloat(), 24), 60)
 
@@ -231,7 +231,7 @@ sealed class LemonRenderer {
                         x = startx
                         currentPoint++
 
-                      //  val bgrScreen = resizeImage(bufferedImage, 720,720)
+                        val bgrScreen = resizeImage(bufferedImage, frameSize, frameSize)
                         val converter = ConverterFactory.createConverter(bufferedImage, IPixelFormat.Type.YUV420P)
                         val frame = converter.toPicture(bufferedImage, (41666.666 * index).roundToLong())
 
@@ -287,14 +287,19 @@ sealed class LemonRenderer {
             }
             return result
         }
+
         private fun resizeImage(image: BufferedImage, width: Int, height: Int): BufferedImage {
-            val scaled = image.getScaledInstance(width,height, Image.SCALE_SMOOTH)
-            val type: Int = if (image.type == 0) BufferedImage.TYPE_INT_ARGB else image.type
-            val resizedImage = BufferedImage(width, height, type)
-            val g = resizedImage.createGraphics()
-            g.drawImage(scaled, 0, 0, width, height, null)
-            g.dispose()
-            return resizedImage
+
+            if (height != 1080) {
+                val scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH)
+                val type: Int = if (image.type == 0) BufferedImage.TYPE_INT_ARGB else image.type
+                val resizedImage = BufferedImage(width, height, type)
+                val g = resizedImage.createGraphics()
+                g.drawImage(scaled, 0, 0, width, height, null)
+                g.dispose()
+                return resizedImage
+            }
+            return image
         }
 
     }

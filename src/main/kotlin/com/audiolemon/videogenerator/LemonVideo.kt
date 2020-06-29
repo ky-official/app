@@ -11,7 +11,7 @@ import com.xuggle.xuggler.*
 * */
 class LemonVideo(data: LemonData) {
 
-
+    private val frameSize = 480
     private var data = data
     private var audioUrl: String = data.audioUrl
     private var videoUrl: String = LemonFileManager.createVideoContainer(data.id)
@@ -31,8 +31,8 @@ class LemonVideo(data: LemonData) {
                 0,
                 ICodec.ID.CODEC_ID_MPEG4,
                 IRational.make(24.0),
-                1080,
-                1080
+                frameSize,
+                frameSize
         )
         writer.addAudioStream(1, 1, 2, 44100)
 
@@ -45,7 +45,7 @@ class LemonVideo(data: LemonData) {
     }
 
     suspend fun render() {
-        LemonRenderer.start(data, writer, ampData)
+        LemonRenderer.start(data, writer, ampData,frameSize)
     }
 
     private fun FADecoder() {
