@@ -72,6 +72,7 @@ sealed class LemonDBManager() {
                 val result = statement.executeQuery("SELECT PROGRESS FROM TASKS WHERE ID='$id'")
                 while (result.next()) {
                     return result.getInt("PROGRESS")
+                    result.close()
                     break
                 }
                 this.close()
@@ -89,6 +90,7 @@ sealed class LemonDBManager() {
                 val result = statement.executeQuery("SELECT STATUS FROM TASKS WHERE ID='$id'")
                 while (result.next()) {
                     return result.getString("STATUS")
+                    result.close()
                     break
                 }
             } catch (e: SQLException) {
@@ -105,6 +107,7 @@ sealed class LemonDBManager() {
                 val result = statement.executeQuery("SELECT MODIFIED FROM TASKS WHERE ID='$id'")
                 while (result.next()) {
                     return result.getString("MODIFIED")
+                    result.close()
                     break
                 }
                 this.close()

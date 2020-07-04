@@ -71,7 +71,7 @@ sealed class LemonFileManager {
             return path
         }
 
-        fun getResource(path: String): File {
+        fun getResource(path: String?): File {
             return File(path)
         }
 
@@ -93,35 +93,26 @@ sealed class LemonFileManager {
                         try {
                             var os = Files.newOutputStream(filePath)
                             os.write(resource.inputStream.readBytes())
+                            os.close()
                             return filePath.toString()
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
                     }
-                    "background" -> {
+                    "image" -> {
                         var path: String = "$ROOT/tasks/task_$id/resources/images"
-                        filePath = Paths.get(path, "background.${resource.submittedFileName.substringAfterLast(".")}")
+                        filePath = Paths.get(path, "${resource.name}.${resource.contentType.substringAfter("/")}")
                         try {
                             var os = Files.newOutputStream(filePath)
                             os.write(resource.inputStream.readBytes())
-                            return filePath.toString()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                    "foreground" -> {
-                        var path: String = "$ROOT/tasks/task_$id/resources/images"
-                        filePath = Paths.get(path, "foreground.${resource.submittedFileName.substringAfterLast(".")}")
-                        try {
-                            var os = Files.newOutputStream(filePath)
-                            os.write(resource.inputStream.readBytes())
+                            os.close()
                             return filePath.toString()
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
                     }
                     else -> {
-                        println("wrong resource type passed: $type")
+                        println("invalid resource type passed: $type")
                     }
                 }
             } catch (e: IOException) {

@@ -1,64 +1,54 @@
 package com.audiolemon.videogenerator
 
 class LemonMeta {
-    lateinit var audio: Audio
-    lateinit var foreground: Foreground
-    lateinit var header: Header
-    lateinit var subHeader: SubHeader
+    lateinit var video: Video
     lateinit var waveform: Waveform
-    lateinit var date: Date
     lateinit var audioTracker: AudioTracker
-    lateinit var branding: Branding
 
 
 }
-
-class Audio {
-    var trackLimits: String? = null
-}
-
-class Foreground {
-    var frameType: String? = null
+class LemonImage{
+    var url: String? = null
+    var frame: LemonFrameType? = null
+    var frameColor: String? = null
+    var width: Double? = null
+    var height: Double? = null
+    var mask: LemonMaskType? = null
+    var transform: String? = null
     var posX: Double? = null
     var posY: Double? = null
+    var zIndex: Int? = null
 }
 
-class Header {
+class LemonText{
+    var value: String? = null
     var font: String? = null
     var fontSize: Int? = null
-    var fontStyle: String? = null
-    var fontWeight: String? = null
+    var fontStyle: LemonFontStyle? = null
+    var fontWeight: LemonFontWeight? = null
     var color: String? = null
     var posX: Double? = null
     var posY: Double? = null
+    var zIndex: Int? = null
 }
 
-class SubHeader {
-    var font: String? = null
-    var fontSize: Int? = null
-    var fontStyle: String? = null
-    var fontWeight: String? = null
-    var color: String? = null
-    var posX: Double? = null
-    var posY: Double? = null
-}
 
+class Video {
+    val fill:String? = null
+    var width: Double? = null
+    var height: Double? = null
+    var waterMark: Boolean? = null
+    var waterMarkType: LemonWaterMark? = null
+}
 class Waveform {
     var type: LemonWaveformType? = null
     var fill: String? = null
     var stroke: String? = null
     var design: LemonWaveformDesign? = null
+    var width: Double? = null
+    var height: Double? = null
     var posX: Double? = null
     var posY: Double? = null
-}
-
-class Date {
-    var display: Boolean? = null
-    var format: Int? = null
-    var font: String? = null
-    var fontSize: Int? = null
-    var fontStyle: String? = null
-    var fontWeight: String? = null
 }
 
 class AudioTracker {
@@ -67,6 +57,3 @@ class AudioTracker {
     var fill: String? = null
 }
 
-class Branding {
-    var display: Boolean? = null
-}

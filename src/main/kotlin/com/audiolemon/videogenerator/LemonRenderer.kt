@@ -3,303 +3,225 @@ package com.audiolemon.videogenerator
 import com.xuggle.mediatool.IMediaWriter
 import com.xuggle.xuggler.IPixelFormat
 import com.xuggle.xuggler.video.ConverterFactory
+import org.imgscalr.Scalr
 import java.awt.*
-import java.awt.font.TextAttribute
-import java.awt.geom.AffineTransform
-import java.awt.geom.GeneralPath
-import java.awt.geom.Path2D
 import java.awt.image.BufferedImage
-import java.awt.image.ImageObserver
+import javax.imageio.ImageIO
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import java.awt.RenderingHints
+import java.awt.Graphics2D
+import java.awt.font.TextAttribute
+import java.awt.geom.*
+import java.awt.GraphicsEnvironment
 
-sealed class LemonRenderer {
 
-    companion object {
-        suspend fun start(data: LemonData, writer: IMediaWriter, ampDta: ArrayList<ArrayList<Float>>, frameSize: Int) {
-            when (data.meta.waveform.design) {
-                LemonWaveformDesign.DEFAULT -> {
-                    LemonDBManager.updateStatus(data.id, "RUNNING")
-                    default(data, writer, ampDta, frameSize)
-                }
-                else -> {
-                    LemonDBManager.updateStatus(data.id, "RUNNING")
-                    default(data, writer, ampDta, frameSize)
-                }
-            }
 
+
+class LemonRenderer {
+
+    fun start(data: LemonData, writer: IMediaWriter, ampData: ArrayList<FloatArray>) {
+
+        val width = 25.0
+        var points: Int = 0
+        if (data.meta.waveform.type == LemonWaveformType.FAD) {
+            points = ampData[0].size
+        } else if (data.meta.waveform.type == LemonWaveformType.SAD) {
+            points = ampData.size
         }
 
-        suspend fun default(data: LemonData, writer: IMediaWriter, ampData: ArrayList<ArrayList<Float>>, frameSize: Int) {
+        var index = 1
+        var progress = 0
+        var currentPoint = 0
 
-            val ampData = arraySampler(compressMatrix(ampData, data.trackLength!!.toFloat(), 24), 60)
+        val heightBuffer = FloatArray(ampData.size)
+        val staticImage = createStaticRenderedImage(data)
+        val bufferedImage = BufferedImage(data.meta.video.width!!.toInt(), data.meta.video.height!!.toInt(), BufferedImage.TYPE_3BYTE_BGR)
+        val g2d = bufferedImage.createGraphics()
+        applyQualityRenderingHints(g2d)
 
-            val bend = 10
-            val bend2 = 4
+        var plotter = LemonPlotter().getPlotter(data.meta.waveform.type!!, data.meta.waveform.design!!)
+        while (LemonTaskManager.taskIsRunning(data.id)) {
 
-            val width = 25.0
+            Thread.sleep(0)
+            if (currentPoint < points) {
 
-            val startx = data.meta.waveform.posX!!.toDouble() + width
-            val starty = data.meta.waveform.posY!!.toDouble()
-
-            val y = starty
-            var x = startx
-
-
-            var cpOneX: Double
-            var cpOneY: Double
-            var cpTwoX: Double
-            var cpTwoY: Double
-
-            val points = ampData[0].size
-            var currentPoint = 0
-
-
-            val headerColor = Color.decode(data.meta.header.color)
-            val subHeaderColor = Color.decode(data.meta.subHeader.color)
-            val waveformFill = Color.decode(data.meta.waveform.fill)
-
-
-            val attributes = HashMap<TextAttribute, Any>()
-            attributes[TextAttribute.TRACKING] = -0.02
-            val headerFont = Font(data.meta.header.font, Font.BOLD, data.meta.header.fontSize!!).deriveFont(attributes)
-            val subHeaderFont = Font(data.meta.subHeader.font, Font.PLAIN, data.meta.subHeader.fontSize!!).deriveFont(attributes)
-
-
-            val transform = AffineTransform.getTranslateInstance(0.0, 1080.0)
-            transform.scale(1.0, -1.0)
-
-
-            val bufferedImage = BufferedImage(1080, 1080, BufferedImage.TYPE_3BYTE_BGR)
-            val bg = bufferedImage.createGraphics()
-
-            bg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            bg.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
-
-            var back = Toolkit.getDefaultToolkit().getImage(data.backgroundImageUrl)
-            var forg = Toolkit.getDefaultToolkit().getImage(data.foregroudImageUrl)
-            var watermark = Toolkit.getDefaultToolkit().getImage("src/main/kotlin/com/audiolemon/videogenerator/resources/watermark.png")
-
-            back = back.getScaledInstance(1080, 1080, Image.SCALE_SMOOTH)
-            forg = forg.getScaledInstance(180, 180, Image.SCALE_SMOOTH)
-            watermark = watermark.getScaledInstance(200, 200, Image.SCALE_SMOOTH)
-
-            var index = 1
-            var progress = 0
-            val heightBuffer: Array<Float> = Array<Float>(ampData.size) { i: Int -> i * 0f }
-
-            var imageLoaded = false
-            val obs = object : ImageObserver {
-                override fun imageUpdate(img: Image?, infoflags: Int, x: Int, y: Int, width: Int, height: Int): Boolean {
-
-                    imageLoaded = infoflags == 32
-                    return true
-
+                g2d.clearRect(0, 0, data.meta.video.width!!.toInt(), data.meta.video.height!!.toInt())
+                val trackProgress = (currentPoint / points.toDouble()) * 100
+                if (trackProgress.roundToInt() != progress) {
+                    println("task with id:${data.id} at $progress%")
+                    progress = trackProgress.roundToInt()
+                    LemonDBManager.updateProgress(data.id, progress)
                 }
 
-            }
+                g2d.drawRenderedImage(staticImage, null)
+                val path = GeneralPath(Path2D.WIND_NON_ZERO, 5)
+                path.moveTo(data.meta.waveform.posX!!.toDouble() - width, data.meta.waveform.posY!!.toDouble())
 
-            //pre draws
-            bg.drawImage(watermark, 750, 820, null)
-            bg.drawImage(forg, data.meta.foreground.posX!!.roundToInt(), data.meta.foreground.posY!!.roundToInt(), null)
-            bg.drawImage(back, null, obs)
+                plotter(data, ampData, currentPoint, path, heightBuffer, width, g2d)
+                currentPoint++
+                index++
 
-            while (LemonTaskManager.taskIsRunning(data.id)) {
-                //dummy logic for heroku
-                Thread.sleep(0)
+                val converter = ConverterFactory.createConverter(bufferedImage, IPixelFormat.Type.YUV420P)
+                val frame = converter.toPicture(bufferedImage, (41666.666 * index).roundToLong())
+                writer.encodeVideo(0, frame)
 
-                if (imageLoaded) {
-
-                    val trackProgress = (currentPoint / points.toDouble()) * 100
-                    if (trackProgress.roundToInt() != progress) {
-                        println("task with id:${data.id} at $progress%")
-                        progress = trackProgress.roundToInt()
-                        LemonDBManager.updateProgress(data.id, progress)
-                    }
-
-                    if (currentPoint < points) {
-
-
-                        bg.drawImage(back, 0, 0, null)
-                        bg.font = headerFont
-                        bg.color = headerColor
-                        bg.drawString(data.header, data.meta.header.posX!!.toFloat(), data.meta.header.posY!!.toFloat())
-
-                        bg.font = subHeaderFont
-                        bg.color = subHeaderColor
-                        bg.drawString(data.subHeader, data.meta.subHeader.posX!!.toFloat(), data.meta.subHeader.posY!!.toFloat())
-
-
-                        if (data.meta.branding.display!!) {
-                            bg.drawImage(watermark, 750, 820, null)
-                        }
-                        bg.drawImage(forg, data.meta.foreground.posX!!.roundToInt(), data.meta.foreground.posY!!.roundToInt(), null)
-
-
-                        if (data.meta.foreground.frameType == "solid") {
-                            bg.stroke = BasicStroke(20f)
-                            bg.drawRect(data.meta.foreground.posX!!.roundToInt(), data.meta.foreground.posY!!.roundToInt(), 180, 180)
-                        }
-
-                        bg.stroke = BasicStroke(0f)
-                        val path = GeneralPath(Path2D.WIND_NON_ZERO, 5)
-                        path.moveTo(x - width, y)
-
-
-                        for (band in 0 until ampData.size) {
-
-                            val cpx = x
-                            var cpy: Double
-
-                            if (ampData[band][currentPoint] > heightBuffer[band]) {
-                                cpy = y + ampData[band][currentPoint]
-                                heightBuffer[band] = ampData[band][currentPoint]
-                            } else {
-                                cpy = y + heightBuffer[band]
-                            }
-
-                            heightBuffer[band] = heightBuffer[band] - 5
-
-                            if (band == 0) {
-
-                                val spx = x - width
-                                val spy = y
-
-                                val npx = x + width
-                                val npy = y + ampData[band + 1][currentPoint]
-
-                                cpOneX = spx + (cpx - spx) / bend2
-                                cpOneY = spy + (cpy - spy) / bend
-
-                                cpTwoX = cpx - (npx - spx) / bend2
-                                cpTwoY = cpy - (npy - spy) / bend
-
-                                path.curveTo(cpOneX, cpOneY, cpTwoX, cpTwoY, cpx, cpy)
-
-                            } else if (band > 0 && band < ampData.size - 2) {
-
-                                var pp0x: Double
-                                var pp0y: Double
-
-                                if (band == 1) {
-                                    pp0x = x - (width * 2)
-                                    pp0y = y
-                                } else {
-                                    pp0x = x - (width * 2)
-                                    pp0y = y + ampData[band - 2][currentPoint]
-                                }
-
-                                val ppx = x - width
-                                val ppy = y + ampData[band - 1][currentPoint]
-
-                                val npx = x + width
-                                val npy = y + ampData[band + 1][currentPoint]
-
-                                cpOneX = ppx + (cpx - pp0x) / bend2
-                                cpOneY = ppy + (cpy - pp0y) / bend
-
-                                cpTwoX = cpx - (npx - ppx) / bend2
-                                cpTwoY = cpy - (npy - ppy) / bend
-
-                                path.curveTo(cpOneX, cpOneY, cpTwoX, cpTwoY, cpx, cpy)
-
-                            } else {
-                                val pp0x = x - (width * 2)
-                                val pp0y = y + ampData[band - 2][currentPoint]
-
-                                val ppx = x - width
-                                val ppy = y + ampData[band - 1][currentPoint]
-
-
-
-                                cpOneX = ppx + (cpx - pp0x) / bend2
-                                cpOneY = ppy + (cpy - pp0y) / bend
-
-                                cpTwoX = cpx - (cpx - ppx) / bend2
-                                cpTwoY = cpy - (cpy - ppy) / bend
-
-                                path.curveTo(cpOneX, cpOneY, cpTwoX, cpTwoY, cpx, cpy)
-
-                            }
-                            x += width
-                        }
-                        path.closePath()
-                        path.transform(transform)
-                        bg.paint = waveformFill
-                        bg.draw(path)
-                        bg.fill(path)
-                        x = startx
-                        currentPoint++
-
-                        val bgrScreen = resizeImage(bufferedImage, frameSize, frameSize)
-                        val converter = ConverterFactory.createConverter(bgrScreen, IPixelFormat.Type.YUV420P)
-                        val frame = converter.toPicture(bgrScreen, (41666.666 * index).roundToLong())
-
-                        writer.encodeVideo(0, frame)
-
-                        index++
-                        bg.clearRect(0, 0, 1080, 1080)
-                    } else {
-                        break
-                    }
-                }
-            }
-
-            writer.close()
-            LemonDBManager.updateStatus(data.id, "FINISHED")
-            println("Video Created")
+            } else break
         }
-
-        private fun compressMatrix(
-                matrix: ArrayList<ArrayList<Float>>,
-                sampleLength: Float,
-                sampleRate: Int
-        ): ArrayList<ArrayList<Float>> {
-
-            val matrixSize = matrix.size
-            val final = ArrayList<ArrayList<Float>>()
-            val interval = (sampleRate * sampleLength).roundToInt()
-
-            for (i in 0 until matrixSize) {
-                final.add(ArrayList<Float>())
-            }
-
-
-            for (i in 0 until matrixSize) {
-                val sourceBand = matrix[i]
-                final[i] = arraySampler(sourceBand, interval)
-            }
-            return final
-        }
-
-        private inline fun <reified T> arraySampler(array: ArrayList<T>, sampleSize: Int): ArrayList<T> {
-
-            if (sampleSize > array.size) {
-                return array
-            }
-            val result: ArrayList<T> = ArrayList<T>()
-            val totalItems = array.size
-            val interval = totalItems.toDouble() / sampleSize
-
-            for (i in 0 until sampleSize) {
-                val evenIndex = Math.floor(i * interval + interval / 2).toInt()
-                result.add(array[evenIndex])
-            }
-            return result
-        }
-
-        private fun resizeImage(image: BufferedImage, width: Int, height: Int): BufferedImage {
-
-            if (height != 1080) {
-                val scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH)
-                val resizedImage = BufferedImage(width, height,BufferedImage.TYPE_3BYTE_BGR )
-                val g = resizedImage.createGraphics()
-                g.drawImage(scaled, 0, 0, width, height, null)
-                g.dispose()
-                return resizedImage
-            }
-            return image
-        }
+        writer.close()
+        println("writer closed")
+        LemonDBManager.updateStatus(data.id, "RUNNING")
 
     }
+
+    private fun createStaticRenderedImage(data: LemonData): BufferedImage {
+
+        val bufferedImage = BufferedImage(data.meta.video.width!!.toInt(), data.meta.video.height!!.toInt(), BufferedImage.TYPE_3BYTE_BGR)
+        val bg = bufferedImage.createGraphics()
+        applyQualityRenderingHints(bg)
+        bg.color = Color.decode(data.meta.video.fill)
+        bg.fillRect(0, 0, data.meta.video.width!!.toInt(), data.meta.video.height!!.toInt())
+
+        val sortedImages = data.images.sortedWith(compareBy { it.zIndex })
+        val sortedTexts = data.texts.sortedWith(compareBy { it.zIndex })
+
+        for (image in sortedImages) {
+
+            var source = ImageIO.read(LemonFileManager.getResource(image!!.url))
+            if (image.width != 0.0 || image.height != 0.0) {
+                source = Scalr.resize(source, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, image.width!!.toInt(), image.height!!.toInt(), Scalr.OP_ANTIALIAS)
+            }
+
+            if (image.mask != LemonMaskType.NONE) {
+                when (image.mask) {
+                    LemonMaskType.CIRCLE -> {
+                        source = maskImageToCircle(source)
+                    }
+                    LemonMaskType.SQUARE -> {
+
+                    }
+                }
+            }
+            if (image.transform != null && image.transform != "none") {
+                val degree = image.transform!!.substringAfterLast(":").trim().toDouble()
+                source = rotateImageByDegrees(source, degree)
+            }
+            bg.drawImage(source, null, image.posX!!.toInt(), image.posY!!.toInt())
+            if (image.frame != LemonFrameType.NONE && image.mask != LemonMaskType.CIRCLE) {
+                var frameColor = Color.decode(image.frameColor)
+                var frameWidth = 0f
+                when (image.frame) {
+                    LemonFrameType.THIN -> {
+                        frameWidth = 2f
+                    }
+                    LemonFrameType.NORMAL -> {
+                        frameWidth = 5f
+                    }
+                    LemonFrameType.SOLID -> {
+                        frameWidth = 10f
+                    }
+                }
+                bg.color = frameColor
+                bg.stroke = BasicStroke(frameWidth)
+                bg.drawRect(image.posX!!.roundToInt() + frameWidth.toInt() / 2, image.posY!!.roundToInt(), source.width, source.height)
+            }
+        }
+        var font2: Font? = null
+        try{
+            val graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment()
+            font2 = Font.createFont(Font.TRUETYPE_FONT, LemonFileManager.getResource("src/main/kotlin/com/audiolemon/videogenerator/resources/Bebas-Regular.otf"))
+            graphicsEnvironment.registerFont(font2)
+
+        }
+        catch (e:Exception){
+            e.printStackTrace()
+        }
+        for (text in sortedTexts) {
+            val attributes = HashMap<TextAttribute, Any>()
+            var style = 0f
+
+            style = if (text.fontStyle == LemonFontStyle.ITALIC) TextAttribute.POSTURE_OBLIQUE else TextAttribute.POSTURE_REGULAR
+            when {
+                text.fontWeight == LemonFontWeight.BOLD -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_BOLD
+                text.fontWeight == LemonFontWeight.NORMAL -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_REGULAR
+                text.fontWeight == LemonFontWeight.THIN -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_LIGHT
+            }
+
+
+            attributes[TextAttribute.SIZE] = text.fontSize!!
+            attributes[TextAttribute.POSTURE] = style
+
+
+            bg.font = Font(text.font!!,Font.PLAIN,text.fontSize!!).deriveFont(attributes)
+            bg.color = Color.decode(text.color)
+            bg.drawString(text.value, text.posX!!.toFloat(), text.posY!!.toFloat())
+
+        }
+        return bufferedImage
+    }
+
+    private fun rotateImageByDegrees(img: BufferedImage, angle: Double): BufferedImage {
+
+        val rads = Math.toRadians(angle)
+        val sin = Math.abs(Math.sin(rads))
+        val cos = Math.abs(Math.cos(rads))
+        val w = img.width
+        val h = img.height
+        val newWidth = Math.floor(w * cos + h * sin).toInt()
+        val newHeight = Math.floor(h * cos + w * sin).toInt()
+
+        val rotated = BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
+
+        val at = AffineTransform()
+        val x = w / 2
+        val y = h / 2
+        at.rotate(rads, x.toDouble(), y.toDouble())
+
+        val g2d = rotated.createGraphics()
+        applyQualityRenderingHints(g2d)
+        g2d.transform = at
+        g2d.drawRenderedImage(img, null)
+        g2d.dispose()
+
+        return rotated
+    }
+
+    private fun maskImageToCircle(img: BufferedImage): BufferedImage {
+
+        var width = img.width
+        var height = img.height
+        var diameter = 0
+        var oval: Area? = null
+        diameter = if (width > height || width == height) {
+            height
+        } else {
+            width
+        }
+        oval = if (width > height) {
+            Area(Ellipse2D.Double((width - diameter.toDouble()) / 2, 0.0, diameter.toDouble(), diameter.toDouble()))
+        } else {
+            Area(Ellipse2D.Double((width - diameter.toDouble()) / 2, 0.0, diameter.toDouble(), diameter.toDouble()))
+        }
+        var masked = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val g2d = masked.createGraphics()
+        applyQualityRenderingHints(g2d)
+        g2d.clip(oval)
+        g2d.drawRenderedImage(img, null)
+        g2d.dispose()
+        return masked
+    }
+
+    private fun applyQualityRenderingHints(g2d: Graphics2D) {
+
+        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY)
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY)
+        g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE)
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON)
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+    }
+
 }

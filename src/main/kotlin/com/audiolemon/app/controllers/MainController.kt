@@ -44,6 +44,10 @@ class MainController {
 
         return LemonDBManager.getProgress(id).toString()
     }
+    @GetMapping("/complete/{id}")
+    fun isCompleteController(@PathVariable id: String): String {
+        return LemonTaskManager.isComplete(id).toString()
+    }
 
     @GetMapping("/status/{id}")
     fun statusController(@PathVariable id: String): String {
@@ -89,7 +93,6 @@ class MainController {
             var data = LemonData()
             data.initialize(request!!.parts)
             var lemonVideo = LemonVideo(data)
-
             var job = LemonTaskManager.newJob()
             LemonTaskManager.addTask(data.id, job)
             CoroutineScope(Dispatchers.IO + job).launch {
