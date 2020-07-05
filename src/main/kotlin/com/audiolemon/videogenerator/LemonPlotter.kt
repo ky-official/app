@@ -4,12 +4,7 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.geom.GeneralPath
-import java.awt.image.AffineTransformOp
-import java.awt.image.BufferedImage
-import java.util.ArrayList
-import java.text.ParsePosition
-import java.text.FieldPosition
-import java.text.Format
+import java.util.*
 
 
 class LemonPlotter {
@@ -26,15 +21,15 @@ class LemonPlotter {
                 LemonWaveformDesign.DEFAULT -> return ::freqAmpPlotterSpectralFlux
             }
         }
-        return { _: LemonData, _: ArrayList<FloatArray>, _: Int, _: GeneralPath, _: FloatArray, _: Double, _:Graphics2D -> { println("invalid plotter parameters") } }
+        return { _: LemonData, _: ArrayList<FloatArray>, _: Int, _: GeneralPath, _: FloatArray, _: Double, _: Graphics2D -> { println("invalid plotter parameters") } }
     }
 
-    private fun freqAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double,g2d: Graphics2D) {
+    private fun freqAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double, g2d: Graphics2D) {
 
         val bend = 10
         val bend2 = 4
 
-        var x = data.meta.waveform.posX!!.toDouble()+width
+        var x = data.meta.waveform.posX!!.toDouble() + width
         var y = data.meta.waveform.posY!!.toDouble()
         var cpOneX: Double
         var cpOneY: Double
@@ -118,27 +113,38 @@ class LemonPlotter {
             }
             x += width
         }
-        var tx = AffineTransform.getTranslateInstance(0.0,data.meta.video.height!!.toDouble());tx.scale(1.0, -1.0 )
-        var tx3 = AffineTransform.getTranslateInstance(1.0,2*data.meta.waveform.posY!!-data.meta.video.height!!)
 
-        path.lineTo(x,y)
+        val scalex = data.meta.waveform.width!!/path.bounds.width
+        val scaley = 1.0
+
+        var flip = AffineTransform.getTranslateInstance(0.0, data.meta.video.height!!.toDouble());flip.scale(1.0, -1.0)
+        var restorePosition = AffineTransform.getTranslateInstance(1.0, 2 * data.meta.waveform.posY!! - data.meta.video.height!!)
+        var scale = AffineTransform.getScaleInstance(scalex, scaley)
+
+        path.lineTo(x, y)
         path.closePath()
-        path.transform(tx)
-        path.transform(tx3)
+        path.transform(flip)
+        path.transform(restorePosition)
+
+        path.transform(AffineTransform.getTranslateInstance(-data.meta.waveform.posX!!, -data.meta.waveform.posY!!))
+        path.transform(scale)
+        path.transform(AffineTransform.getTranslateInstance(data.meta.waveform.posX!!, data.meta.waveform.posY!!))
+
         g2d.color = Color.decode(data.meta.waveform.fill)
         g2d.draw(path)
         g2d.fill(path)
 
+
+
     }
 
-    private fun sigAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double,g2d: Graphics2D) {
-
+    private fun sigAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double, g2d: Graphics2D) {
 
 
         val bend = 10
         val bend2 = 4
 
-        var x = data.meta.waveform.posX!!.toDouble()+width
+        var x = data.meta.waveform.posX!!.toDouble() + width
         var y = data.meta.waveform.posY!!.toDouble()
         var cpOneX: Double
         var cpOneY: Double
@@ -225,25 +231,24 @@ class LemonPlotter {
         }
 
 
-        val scalex = 0.5
+        val scalex = data.meta.waveform.width!!/path.bounds.width
         val scaley = 1.0
 
-        var tx = AffineTransform.getTranslateInstance(0.0,data.meta.video.height!!.toDouble());tx.scale(1.0, -1.0 )
-        var tx2 = AffineTransform.getScaleInstance(scalex,scaley)
-        var tx3 = AffineTransform.getTranslateInstance(0.0,2*data.meta.waveform.posY!!-data.meta.video.height!!)
-        var tx4 = AffineTransform.getTranslateInstance(data.meta.waveform.posX!!*scalex,data.meta.waveform.posY!!*scaley)
-        path.lineTo(x,y)
+        var flip = AffineTransform.getTranslateInstance(0.0, data.meta.video.height!!.toDouble()).also {it.scale(1.0, -1.0)  }
+        var scale = AffineTransform.getScaleInstance(scalex, scaley)
+        var restorePosition = AffineTransform.getTranslateInstance(0.0, 2 * data.meta.waveform.posY!! - data.meta.video.height!!)
+        path.lineTo(x, y)
         path.closePath()
 
         var path2 = GeneralPath(path)
 
-        path.transform(tx)
-        path.transform(tx3)
-        path.append(path2,false)
+        path.transform(flip)
+        path.transform(restorePosition)
+        path.append(path2, false)
 
-        path.transform(AffineTransform.getTranslateInstance(-data.meta.waveform.posX!!,-data.meta.waveform.posY!!))
-        path.transform(tx2)
-        path.transform(AffineTransform.getTranslateInstance(data.meta.waveform.posX!!,data.meta.waveform.posY!!))
+        path.transform(AffineTransform.getTranslateInstance(-data.meta.waveform.posX!!, -data.meta.waveform.posY!!))
+        path.transform(scale)
+        path.transform(AffineTransform.getTranslateInstance(data.meta.waveform.posX!!, data.meta.waveform.posY!!))
 
         g2d.color = Color.decode(data.meta.waveform.fill)
         g2d.draw(path)

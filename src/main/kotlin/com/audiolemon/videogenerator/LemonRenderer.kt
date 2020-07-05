@@ -1,24 +1,22 @@
 package com.audiolemon.videogenerator
 
+import com.audiolemon.videogenerator.utility.TextFormat
+import com.audiolemon.videogenerator.utility.TextRenderer
 import com.xuggle.mediatool.IMediaWriter
 import com.xuggle.xuggler.IPixelFormat
 import com.xuggle.xuggler.video.ConverterFactory
 import org.imgscalr.Scalr
 import java.awt.*
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 import java.awt.RenderingHints
-import java.awt.Graphics2D
 import java.awt.font.TextAttribute
 import java.awt.geom.*
-import java.awt.GraphicsEnvironment
+import java.awt.image.BufferedImage
 import java.text.FieldPosition
 import java.text.Format
 import java.text.ParsePosition
-import com.audiolemon.videogenerator.utility.TextFormat
-import com.audiolemon.videogenerator.utility.TextRenderer
+import javax.imageio.ImageIO
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 
 class LemonRenderer {
@@ -91,18 +89,15 @@ class LemonRenderer {
         for (image in sortedImages) {
 
 
-
-
-
             var source = ImageIO.read(LemonFileManager.getResource(image!!.url))
             if (image.width != 0.0 || image.height != 0.0) {
                 source = Scalr.resize(source, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, image.width!!.toInt(), image.height!!.toInt(), Scalr.OP_ANTIALIAS)
             }
 
-            when{
-                image.align == LemonImageAlign.CENTER -> image.posX = (data.meta.video.width!! - source.width)/2
-                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width)*3/4
-                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width)/4
+            when {
+                image.align == LemonImageAlign.CENTER -> image.posX = (data.meta.video.width!! - source.width) / 2
+                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width) * 3 / 4
+                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width) / 4
             }
 
             if (image.mask != LemonMaskType.NONE) {
@@ -157,10 +152,10 @@ class LemonRenderer {
                 text.fontWeight == LemonFontWeight.NORMAL -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_REGULAR
                 text.fontWeight == LemonFontWeight.THIN -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_LIGHT
             }
-            when{
-                text.spacing == LemonSpacing.LOOSE-> attributes[TextAttribute.TRACKING] = 0.2
-                text.spacing == LemonSpacing.NORMAL-> attributes[TextAttribute.TRACKING] = 0.0
-                text.spacing == LemonSpacing.TIGHT-> attributes[TextAttribute.TRACKING] = -0.2
+            when {
+                text.spacing == LemonSpacing.LOOSE -> attributes[TextAttribute.TRACKING] = 0.1
+                text.spacing == LemonSpacing.NORMAL -> attributes[TextAttribute.TRACKING] = 0.0
+                text.spacing == LemonSpacing.TIGHT -> attributes[TextAttribute.TRACKING] = -0.1
             }
 
             TextRenderer.drawString(

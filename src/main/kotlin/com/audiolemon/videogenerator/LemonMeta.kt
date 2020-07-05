@@ -9,7 +9,8 @@ class LemonMeta {
 
 
 }
-class LemonImage{
+
+class LemonImage {
     var url: String? = null
     var frame: LemonFrameType? = null
     var frameColor: String? = null
@@ -23,7 +24,7 @@ class LemonImage{
     var align: LemonImageAlign? = null
 }
 
-class LemonText{
+class LemonText {
     var value: String? = null
     var font: String? = null
     var fontSize: Int? = null
@@ -40,12 +41,13 @@ class LemonText{
 
 
 class Video {
-    val fill:String? = null
+    val fill: String? = null
     var width: Double? = null
     var height: Double? = null
     var waterMark: Boolean? = null
     var waterMarkType: LemonWaterMark? = null
 }
+
 class Waveform {
     var type: LemonWaveformType? = null
     var fill: String? = null
