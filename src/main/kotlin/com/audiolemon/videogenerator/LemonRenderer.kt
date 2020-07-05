@@ -3,17 +3,12 @@ package com.audiolemon.videogenerator
 import com.audiolemon.videogenerator.utility.TextFormat
 import com.audiolemon.videogenerator.utility.TextRenderer
 import com.xuggle.mediatool.IMediaWriter
-import com.xuggle.xuggler.IPixelFormat
-import com.xuggle.xuggler.video.ConverterFactory
 import org.imgscalr.Scalr
 import java.awt.*
 import java.awt.RenderingHints
 import java.awt.font.TextAttribute
 import java.awt.geom.*
 import java.awt.image.BufferedImage
-import java.text.FieldPosition
-import java.text.Format
-import java.text.ParsePosition
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.math.roundToInt
@@ -64,7 +59,7 @@ class LemonRenderer {
                 currentPoint++
                 index++
 
-                writer.encodeVideo(0,bufferedImage,(41666666.6666 * index).roundToLong(),TimeUnit.NANOSECONDS)
+                writer.encodeVideo(0, bufferedImage, (41666666.6666 * index).roundToLong(), TimeUnit.NANOSECONDS)
                 bufferedImage.flush()
             } else break
         }
