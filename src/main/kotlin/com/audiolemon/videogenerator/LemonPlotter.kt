@@ -11,7 +11,6 @@ class LemonPlotter {
 
     fun getPlotter(type: LemonWaveformType, design: LemonWaveformDesign):
             (LemonData, ArrayList<FloatArray>, Int, GeneralPath, FloatArray, Double, Graphics2D) -> Unit {
-        println("form default")
         if (type == LemonWaveformType.SAD) {
             when (design) {
                 LemonWaveformDesign.DEFAULT -> return ::sigAmpPlotterSpectralFlux
