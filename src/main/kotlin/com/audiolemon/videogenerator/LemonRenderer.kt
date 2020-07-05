@@ -131,7 +131,7 @@ class LemonRenderer {
                 bg.drawRect(image.posX!!.roundToInt() + frameWidth.toInt() / 2, image.posY!!.roundToInt(), source.width, source.height)
             }
         }
-        var font2: Font? = null
+       /* var font2: Font? = null
         try {
             val graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment()
             font2 = Font.createFont(Font.TRUETYPE_FONT, LemonFileManager.getResource("src/main/kotlin/com/audiolemon/videogenerator/resources/Bebas-Regular.otf"))
@@ -139,7 +139,7 @@ class LemonRenderer {
 
         } catch (e: Exception) {
             e.printStackTrace()
-        }
+        }*/
         for (text in sortedTexts) {
 
             val attributes = HashMap<TextAttribute, Any>()
