@@ -65,7 +65,8 @@ class LemonRenderer {
         }
         writer.close()
         writer.flush()
-
+        Runtime.getRuntime().gc()
+        System.gc()
         println("writer closed")
         LemonDBManager.updateStatus(data.id, "RUNNING")
 
