@@ -6,6 +6,11 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.GeneralPath
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
+import java.util.ArrayList
+import java.text.ParsePosition
+import java.text.FieldPosition
+import java.text.Format
+
 
 class LemonPlotter {
 
@@ -26,13 +31,10 @@ class LemonPlotter {
 
     private fun freqAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double,g2d: Graphics2D) {
 
-        val transform = AffineTransform.getTranslateInstance(0.0, data.meta.video.height!!.toDouble())
-        transform.scale(1.0, -1.0)
-
         val bend = 10
         val bend2 = 4
 
-        var x = data.meta.waveform.posX!!.toDouble()
+        var x = data.meta.waveform.posX!!.toDouble()+width
         var y = data.meta.waveform.posY!!.toDouble()
         var cpOneX: Double
         var cpOneY: Double
@@ -116,13 +118,17 @@ class LemonPlotter {
             }
             x += width
         }
+        var tx = AffineTransform.getTranslateInstance(0.0,data.meta.video.height!!.toDouble());tx.scale(1.0, -1.0 )
+        var tx3 = AffineTransform.getTranslateInstance(1.0,2*data.meta.waveform.posY!!-data.meta.video.height!!)
 
+        path.lineTo(x,y)
+        path.closePath()
+        path.transform(tx)
+        path.transform(tx3)
         g2d.color = Color.decode(data.meta.waveform.fill)
         g2d.draw(path)
         g2d.fill(path)
-        path.closePath()
-        path.transform(transform)
-        // path.transform(AffineTransform.getScaleInstance(0.5,0.5))
+
     }
 
     private fun sigAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double,g2d: Graphics2D) {
@@ -132,7 +138,7 @@ class LemonPlotter {
         val bend = 10
         val bend2 = 4
 
-        var x = data.meta.waveform.posX!!.toDouble()
+        var x = data.meta.waveform.posX!!.toDouble()+width
         var y = data.meta.waveform.posY!!.toDouble()
         var cpOneX: Double
         var cpOneY: Double
@@ -215,6 +221,7 @@ class LemonPlotter {
 
             }
             x += width
+
         }
 
 
@@ -232,12 +239,11 @@ class LemonPlotter {
 
         path.transform(tx)
         path.transform(tx3)
-
         path.append(path2,false)
 
-
+        path.transform(AffineTransform.getTranslateInstance(-data.meta.waveform.posX!!,-data.meta.waveform.posY!!))
         path.transform(tx2)
-       // path.transform(tx4)
+        path.transform(AffineTransform.getTranslateInstance(data.meta.waveform.posX!!,data.meta.waveform.posY!!))
 
         g2d.color = Color.decode(data.meta.waveform.fill)
         g2d.draw(path)

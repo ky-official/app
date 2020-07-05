@@ -1,5 +1,7 @@
 package com.audiolemon.videogenerator
 
+import com.audiolemon.videogenerator.utility.TextAlignment
+
 class LemonMeta {
     lateinit var video: Video
     lateinit var waveform: Waveform
@@ -18,6 +20,7 @@ class LemonImage{
     var posX: Double? = null
     var posY: Double? = null
     var zIndex: Int? = null
+    var align: LemonImageAlign? = null
 }
 
 class LemonText{
@@ -27,9 +30,12 @@ class LemonText{
     var fontStyle: LemonFontStyle? = null
     var fontWeight: LemonFontWeight? = null
     var color: String? = null
-    var posX: Double? = null
-    var posY: Double? = null
+    var posX: Int? = null
+    var posY: Int? = null
     var zIndex: Int? = null
+    var align: TextAlignment? = null
+    var width: Int? = null
+    var spacing: LemonSpacing? = null
 }
 
 

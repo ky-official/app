@@ -25,3 +25,11 @@ enum class LemonFontStyle {
 enum class LemonWaterMark {
     LIGHT,DARK
 }
+
+enum class LemonSpacing {
+    TIGHT,NORMAL,LOOSE
+}
+
+enum class LemonImageAlign {
+    NONE,CENTER,LEFT,RIGHT
+}

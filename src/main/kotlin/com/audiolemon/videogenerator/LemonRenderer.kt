@@ -14,8 +14,11 @@ import java.awt.Graphics2D
 import java.awt.font.TextAttribute
 import java.awt.geom.*
 import java.awt.GraphicsEnvironment
-
-
+import java.text.FieldPosition
+import java.text.Format
+import java.text.ParsePosition
+import com.audiolemon.videogenerator.utility.TextFormat
+import com.audiolemon.videogenerator.utility.TextRenderer
 
 
 class LemonRenderer {
@@ -56,7 +59,7 @@ class LemonRenderer {
 
                 g2d.drawRenderedImage(staticImage, null)
                 val path = GeneralPath(Path2D.WIND_NON_ZERO, 5)
-                path.moveTo(data.meta.waveform.posX!!.toDouble() - width, data.meta.waveform.posY!!.toDouble())
+                path.moveTo(data.meta.waveform.posX!!.toDouble(), data.meta.waveform.posY!!.toDouble())
 
                 plotter(data, ampData, currentPoint, path, heightBuffer, width, g2d)
                 currentPoint++
@@ -87,9 +90,19 @@ class LemonRenderer {
 
         for (image in sortedImages) {
 
+
+
+
+
             var source = ImageIO.read(LemonFileManager.getResource(image!!.url))
             if (image.width != 0.0 || image.height != 0.0) {
                 source = Scalr.resize(source, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, image.width!!.toInt(), image.height!!.toInt(), Scalr.OP_ANTIALIAS)
+            }
+
+            when{
+                image.align == LemonImageAlign.CENTER -> image.posX = (data.meta.video.width!! - source.width)/2
+                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width)*3/4
+                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width)/4
             }
 
             if (image.mask != LemonMaskType.NONE) {
@@ -127,35 +140,38 @@ class LemonRenderer {
             }
         }
         var font2: Font? = null
-        try{
+        try {
             val graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment()
             font2 = Font.createFont(Font.TRUETYPE_FONT, LemonFileManager.getResource("src/main/kotlin/com/audiolemon/videogenerator/resources/Bebas-Regular.otf"))
             graphicsEnvironment.registerFont(font2)
 
-        }
-        catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         for (text in sortedTexts) {
-            val attributes = HashMap<TextAttribute, Any>()
-            var style = 0f
 
-            style = if (text.fontStyle == LemonFontStyle.ITALIC) TextAttribute.POSTURE_OBLIQUE else TextAttribute.POSTURE_REGULAR
+            val attributes = HashMap<TextAttribute, Any>()
+            attributes[TextAttribute.POSTURE] = if (text.fontStyle == LemonFontStyle.ITALIC) TextAttribute.POSTURE_OBLIQUE else TextAttribute.POSTURE_REGULAR
             when {
                 text.fontWeight == LemonFontWeight.BOLD -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_BOLD
                 text.fontWeight == LemonFontWeight.NORMAL -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_REGULAR
                 text.fontWeight == LemonFontWeight.THIN -> attributes[TextAttribute.WEIGHT] = TextAttribute.WEIGHT_LIGHT
             }
+            when{
+                text.spacing == LemonSpacing.LOOSE-> attributes[TextAttribute.TRACKING] = 0.2
+                text.spacing == LemonSpacing.NORMAL-> attributes[TextAttribute.TRACKING] = 0.0
+                text.spacing == LemonSpacing.TIGHT-> attributes[TextAttribute.TRACKING] = -0.2
+            }
 
-
-            attributes[TextAttribute.SIZE] = text.fontSize!!
-            attributes[TextAttribute.POSTURE] = style
-
-
-            bg.font = Font(text.font!!,Font.PLAIN,text.fontSize!!).deriveFont(attributes)
-            bg.color = Color.decode(text.color)
-            bg.drawString(text.value, text.posX!!.toFloat(), text.posY!!.toFloat())
-
+            TextRenderer.drawString(
+                    bg,
+                    text.value,
+                    Font(text.font!!, Font.PLAIN, text.fontSize!!).deriveFont(attributes),
+                    Color.decode(text.color),
+                    Rectangle(text.posX!!, text.posY!!, text.width!!, 100),
+                    text.align,
+                    TextFormat.FIRST_LINE_VISIBLE
+            )
         }
         return bufferedImage
     }
@@ -224,4 +240,87 @@ class LemonRenderer {
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
     }
 
+    internal class StringAlignUtils(
+            /** Current max length in a line  */
+            private val maxChars: Int, align: Alignment) : Format() {
+
+        /** Current justification for formatting  */
+        private var currentAlignment: Alignment? = null
+
+        enum class Alignment {
+            LEFT, CENTER, RIGHT
+        }
+
+        init {
+            when (align) {
+                StringAlignUtils.Alignment.LEFT, StringAlignUtils.Alignment.CENTER, StringAlignUtils.Alignment.RIGHT -> this.currentAlignment = align
+                else -> throw IllegalArgumentException("invalid justification arg.")
+            }
+            if (maxChars < 0) {
+                throw IllegalArgumentException("maxChars must be positive.")
+            }
+        }
+
+        override fun format(input: Any, where: StringBuffer, ignore: FieldPosition?): StringBuffer {
+            val s = input.toString()
+            val strings = splitInputString(s)
+            val listItr = strings.listIterator()
+
+            while (listItr.hasNext()) {
+                val wanted = listItr.next()
+
+                //Get the spaces in the right place.
+                when (currentAlignment) {
+                    StringAlignUtils.Alignment.RIGHT -> {
+                        pad(where, maxChars - wanted.length)
+                        where.append(wanted)
+                    }
+                    StringAlignUtils.Alignment.CENTER -> {
+                        val toAdd = maxChars - wanted.length
+                        pad(where, toAdd / 2)
+                        where.append(wanted)
+                        pad(where, toAdd - toAdd / 2)
+                    }
+                    StringAlignUtils.Alignment.LEFT -> {
+                        where.append(wanted)
+                        pad(where, maxChars - wanted.length)
+                    }
+                }
+                where.append("\n")
+            }
+            return where
+        }
+
+        private fun pad(to: StringBuffer, howMany: Int) {
+            for (i in 0 until howMany)
+                to.append(' ')
+        }
+
+        fun format(s: String): String {
+            return format(s, StringBuffer(), null).toString()
+        }
+
+        /** ParseObject is required, but not useful here.  */
+        override fun parseObject(source: String, pos: ParsePosition): Any {
+            return source
+        }
+
+        private fun splitInputString(str: String?): List<String> {
+            val list = java.util.ArrayList<String>()
+            if (str == null)
+                return list
+            var i = 0
+            while (i < str.length) {
+                val endindex = Math.min(i + maxChars, str.length)
+                list.add(str.substring(i, endindex))
+                i += maxChars
+            }
+            return list
+        }
+
+        companion object {
+
+            private const val serialVersionUID = 1L
+        }
+    }
 }
