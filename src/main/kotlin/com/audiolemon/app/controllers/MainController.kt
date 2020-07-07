@@ -40,21 +40,25 @@ class MainController {
     }
 
     @GetMapping("/progress/{id}")
+    @CrossOrigin
     fun progressController(@PathVariable id: String): String {
 
         return LemonDBManager.getProgress(id).toString()
     }
     @GetMapping("/complete/{id}")
+    @CrossOrigin
     fun isCompleteController(@PathVariable id: String): String {
         return LemonTaskManager.isComplete(id).toString()
     }
 
     @GetMapping("/status/{id}")
+    @CrossOrigin
     fun statusController(@PathVariable id: String): String {
         return LemonDBManager.getStatus(id)
     }
 
     @GetMapping("/cancel/{id}")
+    @CrossOrigin
     fun cancelController(@PathVariable id: String): String {
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -88,7 +92,6 @@ class MainController {
     @PostMapping("/generate")
     @CrossOrigin
     fun postController() {
-
         try {
             var data = LemonData()
             data.initialize(request!!.parts)
@@ -105,3 +108,4 @@ class MainController {
 
     }
 }
+//-Xmx512m -XX:MaxDirectMemorySize=512m
