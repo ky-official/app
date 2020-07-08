@@ -94,7 +94,7 @@ class LemonRenderer {
             when {
                 image.align == LemonImageAlign.CENTER -> image.posX = (data.meta.video.width!! - source.width) / 2
                 image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width) * 3 / 4
-                image.align == LemonImageAlign.RIGHT -> image.posX = (data.meta.video.width!! - source.width) / 4
+                image.align == LemonImageAlign.LEFT -> image.posX = (data.meta.video.width!! - source.width) / 4
             }
 
             if (image.mask != LemonMaskType.NONE) {
