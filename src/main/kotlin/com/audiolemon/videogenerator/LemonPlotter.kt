@@ -4,13 +4,14 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.geom.GeneralPath
+import java.awt.image.BufferedImage
 import java.util.*
 
 
 class LemonPlotter {
 
     fun getPlotter(type: LemonWaveformType, design: LemonWaveformDesign):
-            (LemonData, ArrayList<FloatArray>, Int, GeneralPath, FloatArray, Double, Graphics2D) -> Unit {
+            (LemonData, ArrayList<FloatArray>, Int, GeneralPath, FloatArray, Double, Graphics2D,Boolean) -> Unit {
         if (type == LemonWaveformType.SAD) {
             when (design) {
                 LemonWaveformDesign.DEFAULT -> return ::sigAmpPlotterSpectralFlux
@@ -20,10 +21,10 @@ class LemonPlotter {
                 LemonWaveformDesign.DEFAULT -> return ::freqAmpPlotterSpectralFlux
             }
         }
-        return { _: LemonData, _: ArrayList<FloatArray>, _: Int, _: GeneralPath, _: FloatArray, _: Double, _: Graphics2D -> { println("invalid plotter parameters") } }
+        return { _: LemonData, _: ArrayList<FloatArray>, _: Int, _: GeneralPath, _: FloatArray, _: Double, _: Graphics2D, _: Boolean -> { println("invalid plotter parameters") } }
     }
 
-    private fun freqAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double, g2d: Graphics2D) {
+    private fun freqAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double, g2d: Graphics2D,doubleBuffered:Boolean) {
 
         val bend = 10
         val bend2 = 4
@@ -129,6 +130,18 @@ class LemonPlotter {
         path.transform(scale)
         path.transform(AffineTransform.getTranslateInstance(data.meta.waveform.posX!!, data.meta.waveform.posY!!))
 
+        if(doubleBuffered) {
+
+            val backBuffer = BufferedImage(data.meta.video.width!!.toInt(), data.meta.video.height!!.toInt(), BufferedImage.TYPE_INT_ARGB)
+            val bbg2d = backBuffer.createGraphics()
+            bbg2d.color = Color.decode(data.meta.waveform.fill)
+            bbg2d.draw(path)
+            bbg2d.fill(path)
+            g2d.drawRenderedImage(backBuffer, null)
+            backBuffer.flush()
+            return
+        }
+
         g2d.color = Color.decode(data.meta.waveform.fill)
         g2d.draw(path)
         g2d.fill(path)
@@ -137,7 +150,7 @@ class LemonPlotter {
 
     }
 
-    private fun sigAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double, g2d: Graphics2D) {
+    private fun sigAmpPlotterSpectralFlux(data: LemonData, ampData: ArrayList<FloatArray>, currentPoint: Int, path: GeneralPath, heightBuffer: FloatArray, width: Double, g2d: Graphics2D,doubleBuffered:Boolean) {
 
 
         val bend = 10
@@ -248,6 +261,18 @@ class LemonPlotter {
         path.transform(AffineTransform.getTranslateInstance(-data.meta.waveform.posX!!, -data.meta.waveform.posY!!))
         path.transform(scale)
         path.transform(AffineTransform.getTranslateInstance(data.meta.waveform.posX!!, data.meta.waveform.posY!!))
+
+        if(doubleBuffered) {
+
+            val backBuffer = BufferedImage(data.meta.video.width!!.toInt(), data.meta.video.height!!.toInt(), BufferedImage.TYPE_INT_ARGB)
+            val bbg2d = backBuffer.createGraphics()
+            bbg2d.color = Color.decode(data.meta.waveform.fill)
+            bbg2d.draw(path)
+            bbg2d.fill(path)
+            g2d.drawRenderedImage(backBuffer, null)
+            backBuffer.flush()
+            return
+        }
 
         g2d.color = Color.decode(data.meta.waveform.fill)
         g2d.draw(path)

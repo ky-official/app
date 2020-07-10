@@ -30,6 +30,7 @@ class LemonRenderer {
         var index = 1
         var progress = 0
         var currentPoint = 0
+        val doubleBuffered = false
 
         val heightBuffer = FloatArray(ampData.size)
         val staticImage = createStaticRenderedImage(data)
@@ -55,7 +56,7 @@ class LemonRenderer {
                 val path = GeneralPath(Path2D.WIND_NON_ZERO, 5)
                 path.moveTo(data.meta.waveform.posX!!.toDouble(), data.meta.waveform.posY!!.toDouble())
 
-                plotter(data, ampData, currentPoint, path, heightBuffer, width, g2d)
+                plotter(data, ampData, currentPoint, path, heightBuffer, width, g2d,doubleBuffered)
                 currentPoint++
                 index++
 
